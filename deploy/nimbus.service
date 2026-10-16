@@ -1,0 +1,15 @@
+[Unit]
+Description=Nimbus subscription client
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/Nimbus
+ExecStart=/opt/Nimbus/nimbus -data /var/lib/nimbus -listen 0.0.0.0:8787
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

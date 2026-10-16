@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nimbus</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect rx='14' width='64' height='64' fill='%236d5cff'/><path d='M14 38c8-16 28-16 36 0' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/><circle cx='32' cy='24' r='6' fill='white'/></svg>">
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-name">Nimbus</div>
+          <div class="brand-sub">subscription client</div>
+        </div>
+      </div>
+      <button class="btn primary wide" id="btn-add-sub">+ Подписка</button>
+      <button class="btn ghost wide" id="btn-import">Вставить ссылки</button>
+      <div class="side-label">Подписки</div>
+      <div id="sub-list" class="sub-list"></div>
+      <div class="side-foot">
+        <button class="btn ghost wide" id="btn-update-all">Обновить все</button>
+        <button class="btn ghost wide" id="btn-settings">Настройки</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div class="search-wrap">
+          <input id="search" type="search" placeholder="Поиск узлов…" autocomplete="off" />
+        </div>
+        <div class="filters">
+          <select id="proto-filter">
+            <option value="">Все протоколы</option>
+            <option value="vless">VLESS</option>
+            <option value="vmess">VMess</option>
+            <option value="trojan">Trojan</option>
+            <option value="shadowsocks">SS</option>
+            <option value="hysteria2">Hysteria2</option>
+            <option value="tuic">TUIC</option>
+          </select>
+          <button class="btn ghost" id="btn-ping">Пинг всех</button>
+        </div>
+        <div id="core-pill" class="pill muted">ядро не загружено</div>
+      </header>
+
+      <section class="table-wrap">
+        <table class="nodes">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Имя</th>
+              <th>Протокол</th>
+              <th>Адрес</th>
+              <th>Задержка</th>
+            </tr>
+          </thead>
+          <tbody id="node-body"></tbody>
+        </table>
+        <div id="empty" class="empty hidden">
+          <div class="empty-title">Нет узлов</div>
+          <div class="empty-text">Добавь URL подписки или вставь vmess/vless/trojan/ss/hy2 ссылки — как в Happ или Incy.</div>
+        </div>
+      </section>
+
+      <footer class="bar">
+        <div class="conn">
+          <div id="orb" class="orb"></div>
+          <div>
+            <div id="conn-title" class="conn-title">Не подключено</div>
+            <div id="conn-sub" class="conn-sub">выбери узел и нажми Подключить</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div><span class="k">↑</span> <span id="up">0 B</span></div>
+          <div><span class="k">↓</span> <span id="down">0 B</span></div>
+          <div id="mode-label" class="mode">rule</div>
+        </div>
+        <button id="btn-toggle" class="btn connect">Подключить</button>
+      </footer>
+    </main>
+  </div>
+
+  <div id="modal-sub" class="modal hidden">
+    <div class="sheet">
+      <h2>Новая подписка</h2>
+      <label>Имя</label>
+      <input id="sub-name" placeholder="Мой провайдер" />
+      <label>URL</label>
+      <input id="sub-url" placeholder="https://…  или оставь пустым для ручных узлов" />
+      <label>User-Agent <span class="opt">(необязательно)</span></label>
+      <input id="sub-ua" placeholder="Nimbus/1.0 (clash-meta)" />
+      <div class="row-end">
+        <button class="btn ghost" data-close="modal-sub">Отмена</button>
+        <button class="btn primary" id="sub-save">Добавить</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-import" class="modal hidden">
+    <div class="sheet">
+      <h2>Импорт ссылок</h2>
+      <textarea id="import-text" rows="10" placeholder="vmess://…&#10;vless://…&#10;trojan://…&#10;ss://…&#10;hysteria2://…&#10;или YAML Clash / JSON sing-box"></textarea>
+      <div class="row-end">
+        <button class="btn ghost" data-close="modal-import">Отмена</button>
+        <button class="btn primary" id="import-save">Импортировать</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-settings" class="modal hidden">
+    <div class="sheet wide">
+      <h2>Настройки</h2>
+      <div class="grid2">
+        <div>
+          <label>Режим маршрутизации</label>
+          <select id="set-mode">
+            <option value="rule">Правила</option>
+            <option value="global">Глобальный</option>
+            <option value="direct">Прямой</option>
+          </select>
+        </div>
+        <div>
+          <label>Mixed порт (SOCKS+HTTP)</label>
+          <input id="set-port" type="number" min="1" max="65535" />
+        </div>
+        <div>
+          <label>Clash API порт</label>
+          <input id="set-clash" type="number" min="1" max="65535" />
+        </div>
+        <div>
+          <label>Уровень лога</label>
+          <select id="set-log">
+            <option value="trace">trace</option>
+            <option value="debug">debug</option>
+            <option value="info">info</option>
+            <option value="warn">warn</option>
+            <option value="error">error</option>
+          </select>
+        </div>
+        <div>
+          <label>Remote DNS</label>
+          <input id="set-rdns" />
+        </div>
+        <div>
+          <label>Direct DNS</label>
+          <input id="set-ddns" />
+        </div>
+        <div>
+          <label>Автообновление, часы</label>
+          <input id="set-au" type="number" min="0" />
+        </div>
+        <div>
+          <label>Таймаут пинга, мс</label>
+          <input id="set-ping" type="number" min="500" />
+        </div>
+        <div class="span2">
+          <label>Исключить (через запятую)</label>
+          <input id="set-exclude" placeholder="expire, traffic" />
+        </div>
+        <div class="span2">
+          <label>Только эти слова</label>
+          <input id="set-include" />
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="set-lan" /> Слушать на 0.0.0.0 (LAN)</label>
+      <label class="check"><input type="checkbox" id="set-tun" /> TUN режим (нужны права администратора)</label>
+      <label class="check"><input type="checkbox" id="set-insecure" /> Allow insecure TLS</label>
+      <label class="check"><input type="checkbox" id="set-mux" /> Multiplex</label>
+      <details class="logs">
+        <summary>Журнал</summary>
+        <pre id="log-view"></pre>
+      </details>
+      <div class="row-end">
+        <button class="btn ghost" data-close="modal-settings">Закрыть</button>
+        <button class="btn primary" id="set-save">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/js/app.js"></script>
+</body>
+</html>

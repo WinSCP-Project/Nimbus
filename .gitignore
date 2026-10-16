@@ -1,0 +1,10 @@
+/bin/
+/dist/
+/nimbus
+/nimbus.exe
+*.log
+.nimbus/
+.idea/
+.vscode/
+*.tar.gz
+web/node_modules/
